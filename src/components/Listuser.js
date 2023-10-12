@@ -1,77 +1,61 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
+import { Link } from "react-router-dom";
 
 export default function ListUser() {
 
-    const [inputs,setInputs]=useState({})
+    const [users, setUsers] = useState([])
 
-const handleChange=(event)=>{
-    const name= event.target.name;
-    const value=event.target.value;
-    setInputs(values=>({...values,[name]:value}));
-}
+    useEffect(() => {
+        getUsers();
+    }, []);
 
-const handleSubmit = async (event) => {
-    event.preventDefault();
-    try {
-      const response = await axios.post('http://localhost/api/user/save', inputs);
-      console.log(response.data); // Log the response from the server
-      // You can update your component state or show a success message here
-    } catch (error) {
-      console.error(error); // Log any errors that occur
-      // Handle errors or show an error message to the user
+    function getUsers() {
+
+        axios.get(`http://localhost/api/user/`).then(function (response) {
+            console.log(response.data);
+            setUsers(response.data);
+        });
     }
-  };
-  
+const deleteUser=(id)=>{
+    axios.delete(`http://localhost/api/user/${id}/delete`).then(function(response){
+        getUsers();
+    })
+}
+    var i = 1;
+
     return (
         <div>
 
             <h1>List User</h1>
-            <form onSubmit={handleSubmit} method="post">
-                <table cellSpacing="10">
-                    <tbody>
-                        <tr>
-                            <th>
-                                <label>Name:</label>
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Mobile</th>
+                        <th>Action</th>
+                    </tr>
 
-                            </th>
+
+                </thead>
+                <tbody>
+                    {users.map((user, index) => 
+                        <tr key={index}>
+                            <td>{i++}</td>
+                            <td>{user.name}</td>
+                            <td>{user.email}</td>
+                            <td>{user.mobile}</td>
                             <td>
+                                <Link to={`user/${user.id}/edit`} style={{marginRight:"15px"}}><button>Edit</button></Link>
+                                <button onClick={()=>deleteUser(user.id)}>Delete</button>
+                            </td>
+                        </tr>
+                    )}
+                </tbody>
+            </table>
 
-                                <input type="text" name="name"
-                                onChange={handleChange}
-                                />
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>
-                                <label>Email:</label>
-                            </th>
-                            <td>
-                                <input type="text" name="email"
-                                onChange={handleChange}
-                                />
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>
-                                <label>Mobile:</label>
-                            </th>
-                            <td>
-                                <input type="text" name="mobile"
-                                onChange={handleChange}
-                                />
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colSpan="2" align="right">
-                                <button>Save</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-
-
-            </form>
         </div>
     )
 }
